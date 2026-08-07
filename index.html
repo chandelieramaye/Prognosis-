@@ -519,7 +519,7 @@ select option { background: var(--select-bg); color: var(--text); }
         <span class="nav-icon">⚠️</span> Weak Topics
       </div>
       <div class="nav-item" onclick="showView('spaced')">
-        <span class="nav-icon">🔁</span> Spaced Repetition
+        <span class="nav-icon">🔁</span> Upcoming Reviews
       </div>
       <div class="nav-item" onclick="showView('mcqlog')">
         <span class="nav-icon">📝</span> Practice Tracker
@@ -531,12 +531,9 @@ select option { background: var(--select-bg); color: var(--text); }
 
     <div class="nav-section" style="margin-top:10px">
       <div class="nav-label">Subjects</div>
-      <div class="nav-item" onclick="filterBySubject('Medicine')"><span class="nav-icon">🩺</span> Medicine</div>
-      <div class="nav-item" onclick="filterBySubject('Surgery')"><span class="nav-icon">🔪</span> Surgery</div>
-      <div class="nav-item" onclick="filterBySubject('Paediatrics')"><span class="nav-icon">👶</span> Paediatrics</div>
-      <div class="nav-item" onclick="filterBySubject('O&G')"><span class="nav-icon">🤰</span> O&G</div>
-      <div class="nav-item" onclick="filterBySubject('Psychiatry')"><span class="nav-icon">🧠</span> Psychiatry</div>
-      <div class="nav-item" onclick="filterBySubject('Community Medicine')"><span class="nav-icon">🌍</span> Community Med</div>
+      <div id="subjects-nav">
+        <div style="font-size:12px;color:var(--text-faint);padding:4px 10px">Add topics to see subjects here</div>
+      </div>
     </div>
 
     <div class="exam-countdown">
@@ -553,6 +550,27 @@ select option { background: var(--select-bg); color: var(--text); }
           <option>O&G</option>
           <option>Psychiatry</option>
           <option>Community Medicine</option>
+          <option>Anatomy</option>
+          <option>Physiology</option>
+          <option>Biochemistry</option>
+          <option>Embryology</option>
+          <option>Histology</option>
+          <option>Medical Genetics</option>
+          <option>Pathology</option>
+          <option>Pharmacology</option>
+          <option>Microbiology</option>
+          <option>Haematology</option>
+          <option>Chemical Pathology</option>
+          <option>Medical Immunology</option>
+          <option>Morbid Anatomy</option>
+          <option>ENT</option>
+          <option>Ophthalmology</option>
+          <option>Orthopaedics</option>
+          <option>Dermatology</option>
+          <option>Radiology</option>
+          <option>Anaesthesia</option>
+          <option>Family Medicine</option>
+          <option>Medical Ethics</option>
         </select>
         <input type="date" id="sidebar-exam-date" class="form-input" style="font-size:11px;padding:5px 8px">
         <button onclick="addSidebarExamDate()" style="width:100%;font-size:11px;color:var(--btn-primary-text);background:var(--blue);border:none;border-radius:6px;padding:6px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:600">Add Date</button>
@@ -606,15 +624,36 @@ select option { background: var(--select-bg); color: var(--text); }
       </div>
       <div class="form-group">
         <label class="form-label">Subject *</label>
-        <select class="form-select" id="f-subject">
-          <option value="">Select subject</option>
-          <option>Medicine</option>
-          <option>Surgery</option>
-          <option>Paediatrics</option>
-          <option>O&G</option>
-          <option>Psychiatry</option>
-          <option>Community Medicine</option>
-        </select>
+        <input class="form-input" id="f-subject" list="subject-list" placeholder="e.g. Medicine, Anatomy, Pharmacology…" autocomplete="off">
+        <datalist id="subject-list">
+          <option value="Medicine">
+          <option value="Surgery">
+          <option value="Paediatrics">
+          <option value="O&G">
+          <option value="Psychiatry">
+          <option value="Community Medicine">
+          <option value="Anatomy">
+          <option value="Physiology">
+          <option value="Biochemistry">
+          <option value="Embryology">
+          <option value="Histology">
+          <option value="Medical Genetics">
+          <option value="Pathology">
+          <option value="Pharmacology">
+          <option value="Microbiology">
+          <option value="Haematology">
+          <option value="Chemical Pathology">
+          <option value="Medical Immunology">
+          <option value="Morbid Anatomy">
+          <option value="ENT">
+          <option value="Ophthalmology">
+          <option value="Orthopaedics">
+          <option value="Dermatology">
+          <option value="Radiology">
+          <option value="Anaesthesia">
+          <option value="Family Medicine">
+          <option value="Medical Ethics">
+        </datalist>
       </div>
       <div class="form-group">
         <label class="form-label">Subtopic</label>
@@ -840,6 +879,15 @@ function saveToDB() {
   if (!localStorage.getItem('firstSaveDate')) {
     localStorage.setItem('firstSaveDate', new Date().toISOString().split('T')[0]);
   }
+  buildSubjectsNav();
+  // Update subject datalist with subjects already in use
+  const dl = document.getElementById('subject-list');
+  if (dl) {
+    const existing = [...new Set(topics.map(t => t.subject).filter(Boolean))].sort();
+    const defaults = ['Medicine','Surgery','Paediatrics','O&G','Psychiatry','Community Medicine','Anatomy','Physiology','Biochemistry','Embryology','Histology','Medical Genetics','Pathology','Pharmacology','Microbiology','Haematology','Chemical Pathology','Medical Immunology','Morbid Anatomy','ENT','Ophthalmology','Orthopaedics','Dermatology','Radiology','Anaesthesia','Family Medicine','Medical Ethics'];
+    const all = [...new Set([...defaults, ...existing])].sort();
+    dl.innerHTML = all.map(s => `<option value="${s}">`).join('');
+  }
 }
 
 function shouldShowBackupReminder() {
@@ -858,10 +906,76 @@ function dismissBackupReminder() {
 }
 
 // ─── TAGS ─────────────────────────────────────────────────────────────────────
-function subjectTag(s) {
-  const map = { 'Medicine':'tag-medicine','Surgery':'tag-surgery','Paediatrics':'tag-paediatrics','O&G':'tag-og','Psychiatry':'tag-psychiatry','Community Medicine':'tag-community' };
-  return `<span class="subject-tag ${map[s]||''}">${s}</span>`;
+const subjectColors = ['tag-medicine','tag-surgery','tag-paediatrics','tag-og','tag-psychiatry','tag-community'];
+const subjectColorMap = {};
+
+function getSubjectColor(s) {
+  if (!subjectColorMap[s]) {
+    const keys = Object.keys(subjectColorMap);
+    subjectColorMap[s] = subjectColors[keys.length % subjectColors.length];
+  }
+  return subjectColorMap[s];
 }
+
+function subjectTag(s) {
+  return `<span class="subject-tag ${getSubjectColor(s)}">${s||'—'}</span>`;
+}
+
+function getSubjectIcon(subject) {
+  const s = (subject || '').toLowerCase();
+  if (s.includes('medicine') || s.includes('internal')) return '🩺';
+  if (s.includes('surgery') || s.includes('surgical')) return '🔪';
+  if (s.includes('paediatric') || s.includes('pediatric') || s.includes('child')) return '👶';
+  if (s.includes('o&g') || s.includes('obstetric') || s.includes('gynaecol') || s.includes('gynecol') || s.includes('maternity')) return '🤰';
+  if (s.includes('psychiatry') || s.includes('mental') || s.includes('behav')) return '🧠';
+  if (s.includes('community') || s.includes('public health') || s.includes('epidemio')) return '🌍';
+  if (s.includes('anatomy') || s.includes('morpho')) return '🦴';
+  if (s.includes('physiology') || s.includes('physio')) return '⚡';
+  if (s.includes('biochemistry') || s.includes('biochem')) return '⚗️';
+  if (s.includes('pathology') || s.includes('morbid') || s.includes('histopath')) return '🔬';
+  if (s.includes('pharmacology') || s.includes('pharma') || s.includes('drug')) return '💊';
+  if (s.includes('microbiology') || s.includes('micro') || s.includes('bacterio') || s.includes('virology')) return '🦠';
+  if (s.includes('haematology') || s.includes('hematology') || s.includes('blood')) return '🩸';
+  if (s.includes('immunology') || s.includes('immune')) return '🛡️';
+  if (s.includes('chemical pathology') || s.includes('clinical chemistry')) return '🧪';
+  if (s.includes('genetics') || s.includes('genetic')) return '🧬';
+  if (s.includes('embryology') || s.includes('embryo')) return '🥚';
+  if (s.includes('histology') || s.includes('histo')) return '🔭';
+  if (s.includes('ent') || s.includes('ear') || s.includes('otolaryn')) return '👂';
+  if (s.includes('ophthalmology') || s.includes('ophthal') || s.includes('eye')) return '👁️';
+  if (s.includes('orthopaedic') || s.includes('orthopedic') || s.includes('bone') || s.includes('fracture')) return '🦴';
+  if (s.includes('dermatology') || s.includes('skin') || s.includes('derm')) return '🫧';
+  if (s.includes('radiology') || s.includes('imaging') || s.includes('radio')) return '🩻';
+  if (s.includes('anaesthesia') || s.includes('anesthesia') || s.includes('anaesthesiol')) return '💉';
+  if (s.includes('family medicine') || s.includes('family')) return '👨‍👩‍👧';
+  if (s.includes('ethics') || s.includes('law') || s.includes('jurisprud')) return '⚖️';
+  if (s.includes('neurology') || s.includes('neuro')) return '🧠';
+  if (s.includes('cardiology') || s.includes('cardiac') || s.includes('heart')) return '🫀';
+  if (s.includes('respiratory') || s.includes('pulmonol') || s.includes('lung')) return '🫁';
+  if (s.includes('gastro') || s.includes('gi ') || s.includes('digest')) return '🫃';
+  if (s.includes('urology') || s.includes('renal') || s.includes('nephro') || s.includes('kidney')) return '🫘';
+  if (s.includes('endocrin') || s.includes('diabetes') || s.includes('thyroid')) return '🔋';
+  if (s.includes('oncology') || s.includes('cancer') || s.includes('tumour') || s.includes('tumor')) return '🎗️';
+  if (s.includes('emergency') || s.includes('trauma') || s.includes('casualty')) return '🚨';
+  if (s.includes('biostatistic') || s.includes('statistic') || s.includes('research')) return '📊';
+  return '📚'; // default for any subject not matched
+}
+
+function buildSubjectsNav() {
+  const nav = document.getElementById('subjects-nav');
+  if (!nav) return;
+  const subjects = [...new Set(topics.map(t => t.subject).filter(Boolean))].sort();
+  if (!subjects.length) {
+    nav.innerHTML = `<div style="font-size:12px;color:var(--text-faint);padding:4px 10px">Add topics to see subjects here</div>`;
+    return;
+  }
+  nav.innerHTML = subjects.map(s => `
+    <div class="nav-item" onclick="filterBySubject('${s.replace(/'/g,"\\'")}')">
+      <span class="nav-icon">${getSubjectIcon(s)}</span>
+      <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s}</span>
+    </div>`).join('');
+}
+
 
 function priorityTag(score) {
   const level = priorityLevel(score);
@@ -937,7 +1051,7 @@ function checkOffTopic(btn, id) {
 }
 
 function updateTodayProgress() {
-  const allTodayTopics = topics.filter(t => priorityScore(t) >= 11 && t.status !== 'Mastered');
+  const allTodayTopics = topics.filter(t => t.status !== 'Mastered' && (isReviewDue(t) || !t.lastReviewed));
   const totalToday = allTodayTopics.length;
   const doneCount = Array.from(_checkedTodaySet).filter(id =>
     allTodayTopics.find(t => Number(t.id) === id)
@@ -1092,7 +1206,7 @@ function showView(view, subjectFilter) {
     topics: '🗂️ Topics Database',
     today: '🔥 Today\'s Plan',
     weak: '⚠️ Weak Topics',
-    spaced: '🔁 Spaced Repetition',
+    spaced: '🔁 Upcoming Reviews',
     mastered: '✅ Mastered',
     mcqlog: '📝 Practice Tracker',
     setup: '🚀 Setup Guide',
@@ -1113,9 +1227,9 @@ function showView(view, subjectFilter) {
     renderExamDates(content);
   } else {
     let filtered = [...topics];
-    if (view === 'today')    filtered = filtered.filter(t => priorityScore(t) >= 11).filter(t => t.status !== 'Mastered');
+    if (view === 'today')    filtered = filtered.filter(t => t.status !== 'Mastered').filter(t => isReviewDue(t) || !t.lastReviewed);
     if (view === 'weak')     filtered = filtered.filter(t => priorityScore(t) >= 16);
-    if (view === 'spaced')   filtered = filtered.filter(t => isReviewDue(t) && t.status !== 'Mastered');
+    if (view === 'spaced')   filtered = filtered.filter(t => t.lastReviewed && t.status !== 'Mastered');
     if (view === 'mastered') filtered = filtered.filter(t => t.status === 'Mastered');
     if (view === 'subject')  filtered = filtered.filter(t => t.subject === subjectFilter);
     filtered.sort((a,b) => priorityScore(b) - priorityScore(a));
@@ -1179,7 +1293,7 @@ function renderSetupGuide(container) {
         <div style="flex:1">
           <div style="font-weight:600;font-size:15px;margin-bottom:6px">Add your topics — one subject at a time</div>
           <div style="font-size:13.5px;color:var(--text-light);line-height:1.7;margin-bottom:12px">
-            Click <b>+ Add Topic</b> and fill in each topic from your school's syllabus. Don't rush this — being honest about your confidence rating is what makes the priority score accurate. For each topic ask yourself:
+            Click <b>+ Add Topic</b> and fill in each topic from your syllabus. Type any subject name — Medicine, Surgery, Anatomy, Pharmacology, Pathology, or any course your school offers. Don't rush this — being honest about your confidence rating is what makes the priority score accurate. For each topic ask yourself:
           </div>
           <div style="background:var(--surface2);border-radius:10px;padding:16px;border:1px solid var(--border)">
             <div style="font-size:12.5px;font-weight:600;color:var(--text-faint);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px">Confidence guide</div>
@@ -1341,7 +1455,8 @@ function renderDashboard(container) {
   const avgMcq = (() => { const practiced = topics.filter(t => t.mcq !== null && t.mcq !== undefined); return practiced.length ? Math.round(practiced.reduce((s,t) => s+t.mcq, 0) / practiced.length) : null; })();
   const masteredPct = Math.round(mastered/total*100);
 
-  const subjects = ['Medicine','Surgery','Paediatrics','O&G','Psychiatry','Community Medicine'];
+  // Dynamic subjects — built from whatever subjects the student has added
+  const subjects = [...new Set(topics.map(t => t.subject).filter(Boolean))].sort();
   const subjectData = subjects.map(s => {
     const st = topics.filter(t => t.subject === s);
     if (!st.length) return { s, pct: 0, count: st.length };
@@ -1353,17 +1468,16 @@ function renderDashboard(container) {
   });
 
   const topPriority = [...topics].sort((a,b) => priorityScore(b)-priorityScore(a)).slice(0,5);
-  const dueToday = topics.filter(t => isReviewDue(t) && t.status !== 'Mastered');
+  const dueToday = topics.filter(t => (isReviewDue(t) || !t.lastReviewed) && t.status !== 'Mastered');
   const quote = getDailyQuote();
   const moodColors = { serious:'var(--blue)', quirky:'var(--purple)', sarcastic:'var(--orange)', fun:'var(--green)' };
   const moodEmojis = { serious:'💡', quirky:'🔬', sarcastic:'😐', fun:'🎉' };
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
 
-  const subjectColors = {
-    'Medicine':'var(--blue)', 'Surgery':'var(--orange)', 'Paediatrics':'var(--green)',
-    'O&G':'var(--purple)', 'Psychiatry':'#ff90e8', 'Community Medicine':'var(--yellow)'
-  };
+  const subjectColorPalette = ['var(--blue)','var(--orange)','var(--green)','var(--purple)','#ff90e8','var(--yellow)','var(--red)','#00d4d4','#ff9640','#a8d4ff'];
+  const subjectColors = {};
+  subjects.forEach((s, i) => { subjectColors[s] = subjectColorPalette[i % subjectColorPalette.length]; });
 
   container.innerHTML = `
 
@@ -1398,7 +1512,7 @@ function renderDashboard(container) {
             <div style="color:var(--text-light)">Due for Review</div>
           </div>
           <div style="background:var(--green-dim);border-radius:8px;padding:10px 14px;font-size:13px">
-            <div style="font-weight:700;color:var(--green);font-size:18px">${Array.from(_checkedTodaySet).filter(id => topics.find(t => Number(t.id) === id && priorityScore(t) >= 11 && t.status !== 'Mastered')).length}</div>
+            <div style="font-weight:700;color:var(--green);font-size:18px">${Array.from(_checkedTodaySet).filter(id => topics.find(t => Number(t.id) === id && t.status !== 'Mastered' && (isReviewDue(t) || !t.lastReviewed))).length}</div>
             <div style="color:var(--text-light)">Done Today</div>
           </div>
         </div>
@@ -1480,7 +1594,7 @@ function renderDashboard(container) {
       <table>
         <thead><tr><th>Topic</th><th>Subject</th><th>Confidence</th><th>Last Reviewed</th><th>Priority</th></tr></thead>
         <tbody>
-          ${topics.filter(t => isReviewDue(t) && t.status !== 'Mastered').slice(0,4).map(t => `
+          ${topics.filter(t => (isReviewDue(t) || !t.lastReviewed) && t.status !== 'Mastered').slice(0,4).map(t => `
             <tr>
               <td><div class="topic-name">${t.topic}</div></td>
               <td>${subjectTag(t.subject)}</td>
@@ -1499,11 +1613,11 @@ function renderDashboard(container) {
 function renderTable(container, data, view) {
   const viewLabels = {
     topics: 'All Topics', today: "Today's Plan",
-    weak: 'Weak Topics', spaced: 'Spaced Repetition',
+    weak: 'Weak Topics', spaced: 'Upcoming Reviews',
     mastered: 'Mastered', subject: currentFilter
   };
 
-  const allTodayTopics = topics.filter(t => priorityScore(t) >= 11 && t.status !== 'Mastered');
+  const allTodayTopics = topics.filter(t => t.status !== 'Mastered' && (isReviewDue(t) || !t.lastReviewed));
   const totalToday = allTodayTopics.length;
   const doneCount = Array.from(_checkedTodaySet).filter(id => allTodayTopics.find(t => Number(t.id) === id)).length;
   const pct = totalToday > 0 ? Math.round(doneCount/totalToday*100) : 0;
@@ -1624,11 +1738,20 @@ function sortTopics(by, view) {
 
 function getViewData(view) {
   let data = [...topics];
-  if (view === 'today')    data = data.filter(t => !_checkedTodaySet.has(Number(t.id))).filter(t => priorityScore(t) >= 11).filter(t => t.status !== 'Mastered');
+  if (view === 'today')    data = data.filter(t => !_checkedTodaySet.has(Number(t.id))).filter(t => t.status !== 'Mastered').filter(t => isReviewDue(t) || !t.lastReviewed);
   if (view === 'weak')     data = data.filter(t => priorityScore(t) >= 16);
-  if (view === 'spaced')   data = data.filter(t => isReviewDue(t) && t.status !== 'Mastered');
+  if (view === 'spaced')   data = data.filter(t => t.lastReviewed && t.status !== 'Mastered');
   if (view === 'mastered') data = data.filter(t => t.status === 'Mastered');
   if (view === 'subject')  data = data.filter(t => t.subject === currentFilter);
+  // Spaced repetition sorts by next review date (soonest first), everything else by priority score
+  if (view === 'spaced') {
+    const intervals = { 1:1, 2:3, 3:5, 4:7, 5:14 };
+    return data.sort((a,b) => {
+      const aDate = new Date(a.lastReviewed); aDate.setDate(aDate.getDate() + (intervals[a.confidence]||3));
+      const bDate = new Date(b.lastReviewed); bDate.setDate(bDate.getDate() + (intervals[b.confidence]||3));
+      return aDate - bDate;
+    });
+  }
   return data.sort((a,b) => priorityScore(b) - priorityScore(a));
 }
 
@@ -1670,7 +1793,7 @@ function closeModal() {
 
 function saveTopic() {
   const topic = document.getElementById('f-topic').value.trim();
-  const subject = document.getElementById('f-subject').value;
+  const subject = document.getElementById('f-subject').value.trim();
   if (!topic || !subject) { showToast('⚠️ Topic name and subject are required'); return; }
 
   // Duplicate detection — check same topic name + subject, excluding current entry if editing
@@ -1866,7 +1989,7 @@ function updateSidebarCountdowns() {
   el.innerHTML = sorted.map(e => {
     const days = getDaysUntil(e.date);
     const color = urgencyColor(days);
-    const icon = subjectIcons[e.subject] || '📅';
+    const icon = getSubjectIcon(e.subject);
     let rightSide;
     if (days < 0) rightSide = `<span style="color:var(--green);font-size:11px;font-weight:600">Done ✓</span>`;
     else if (days === 0) rightSide = `<span style="color:var(--blue);font-size:11px;font-weight:600">Today! 🌟</span>`;
@@ -1959,7 +2082,7 @@ function renderExamDates(container) {
         ${sorted.length ? sorted.map((e, i) => {
           const days = getDaysUntil(e.date);
           const color = urgencyColor(days);
-          const icon = subjectIcons[e.subject] || '📅';
+          const icon = getSubjectIcon(e.subject);
           let badge;
           if (days < 0) badge = `<span style="background:var(--green-dim);color:var(--green);padding:3px 10px;border-radius:5px;font-size:12px;font-weight:500">Done ✓</span>`;
           else if (days === 0) badge = `<span style="background:var(--blue-dim);color:var(--blue);padding:3px 10px;border-radius:5px;font-size:12px;font-weight:600">Today! 🌟</span>`;
@@ -2049,7 +2172,6 @@ function exportData() {
   const payload = {
     version: 1,
     exportedAt: new Date().toISOString(),
-    examDate: localStorage.getItem('prognosisExamDate') || '',
     examDates,
     theme: localStorage.getItem('prognosisTheme') || 'dark-green',
     topics
@@ -2173,6 +2295,9 @@ setTheme(savedTheme, savedThemeEl);
 
 // Start sidebar exam date countdowns
 startSidebarCountdowns();
+
+// Build subjects nav from existing topics
+buildSubjectsNav();
 
 // Refresh quote every hour automatically
 setInterval(() => {
