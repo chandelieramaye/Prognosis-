@@ -1000,26 +1000,31 @@ function scoreColor(score) {
 }
 
 // ─── TODAY CHECKED TOPICS ────────────────────────────────────────────────────
-// In-memory Set — persisted to localStorage, loaded once on startup
 const _todayDate = new Date().toISOString().split('T')[0];
-let _checkedTodaySet = new Set(
-  JSON.parse(localStorage.getItem('checkedTopics_' + _todayDate) || '[]').map(Number)
-);
+const _todayKey = 'checkedTopics_' + _todayDate;
 
 function getCheckedToday() {
-  return Array.from(_checkedTodaySet);
+  try { return JSON.parse(localStorage.getItem(_todayKey) || '[]').map(Number); }
+  catch(e) { return []; }
 }
 
-function saveCheckedToday() {
-  localStorage.setItem('checkedTopics_' + _todayDate, JSON.stringify(Array.from(_checkedTodaySet)));
+function getCheckedTodaySet() {
+  return new Set(getCheckedToday());
+}
+
+function saveCheckedToday(arr) {
+  localStorage.setItem(_todayKey, JSON.stringify(arr));
 }
 
 function checkOffTopic(btn, id) {
   id = Number(id);
 
-  // Add to in-memory Set and persist immediately
-  _checkedTodaySet.add(id);
-  saveCheckedToday();
+  // Read fresh, add, save immediately
+  const checked = getCheckedToday();
+  if (!checked.includes(id)) {
+    checked.push(id);
+    saveCheckedToday(checked);
+  }
 
   // Update lastReviewed in database
   const idx = topics.findIndex(t => Number(t.id) === id);
@@ -1051,11 +1056,10 @@ function checkOffTopic(btn, id) {
 }
 
 function updateTodayProgress() {
+  const checked = getCheckedToday();
   const allTodayTopics = topics.filter(t => t.status !== 'Mastered' && (isReviewDue(t) || !t.lastReviewed));
   const totalToday = allTodayTopics.length;
-  const doneCount = Array.from(_checkedTodaySet).filter(id =>
-    allTodayTopics.find(t => Number(t.id) === id)
-  ).length;
+  const doneCount = checked.filter(id => allTodayTopics.find(t => Number(t.id) === id)).length;
   const remaining = document.querySelectorAll('tbody tr').length;
   const pct = totalToday > 0 ? Math.round(doneCount / totalToday * 100) : 0;
 
@@ -1512,7 +1516,7 @@ function renderDashboard(container) {
             <div style="color:var(--text-light)">Due for Review</div>
           </div>
           <div style="background:var(--green-dim);border-radius:8px;padding:10px 14px;font-size:13px">
-            <div style="font-weight:700;color:var(--green);font-size:18px">${Array.from(_checkedTodaySet).filter(id => topics.find(t => Number(t.id) === id && t.status !== 'Mastered' && (isReviewDue(t) || !t.lastReviewed))).length}</div>
+            <div style="font-weight:700;color:var(--green);font-size:18px">${getCheckedToday().filter(id => topics.find(t => Number(t.id) === id && t.status !== 'Mastered' && (isReviewDue(t) || !t.lastReviewed))).length}</div>
             <div style="color:var(--text-light)">Done Today</div>
           </div>
         </div>
@@ -1527,7 +1531,7 @@ function renderDashboard(container) {
       <div class="stat-card">
         <div class="s-label">Total Topics</div>
         <div class="s-value">${total}</div>
-        <div class="s-sub">Across 6 subjects</div>
+        <div class="s-sub">Across ${[...new Set(topics.map(t => t.subject).filter(Boolean))].length} subject${[...new Set(topics.map(t => t.subject).filter(Boolean))].length !== 1 ? 's' : ''}</div>
       </div>
       <div class="stat-card">
         <div class="s-label">Mastered</div>
@@ -1619,7 +1623,7 @@ function renderTable(container, data, view) {
 
   const allTodayTopics = topics.filter(t => t.status !== 'Mastered' && (isReviewDue(t) || !t.lastReviewed));
   const totalToday = allTodayTopics.length;
-  const doneCount = Array.from(_checkedTodaySet).filter(id => allTodayTopics.find(t => Number(t.id) === id)).length;
+  const doneCount = getCheckedToday().filter(id => allTodayTopics.find(t => Number(t.id) === id)).length;
   const pct = totalToday > 0 ? Math.round(doneCount/totalToday*100) : 0;
 
   const todayBanner = view === 'today' ? `
@@ -1738,7 +1742,7 @@ function sortTopics(by, view) {
 
 function getViewData(view) {
   let data = [...topics];
-  if (view === 'today')    data = data.filter(t => !_checkedTodaySet.has(Number(t.id))).filter(t => t.status !== 'Mastered').filter(t => isReviewDue(t) || !t.lastReviewed);
+  if (view === 'today')    data = data.filter(t => !getCheckedTodaySet().has(Number(t.id))).filter(t => t.status !== 'Mastered').filter(t => isReviewDue(t) || !t.lastReviewed);
   if (view === 'weak')     data = data.filter(t => priorityScore(t) >= 16);
   if (view === 'spaced')   data = data.filter(t => t.lastReviewed && t.status !== 'Mastered');
   if (view === 'mastered') data = data.filter(t => t.status === 'Mastered');
