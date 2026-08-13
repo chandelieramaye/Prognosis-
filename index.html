@@ -710,83 +710,84 @@ select option { background: var(--select-bg); color: var(--text); }
 
 <!-- PRACTICE SESSION MODAL -->
 <div class="modal-overlay" id="mcq-modal-overlay">
-  <div class="modal" style="width:460px">
+  <div class="modal" style="width:500px;max-height:90vh;overflow-y:auto">
     <div class="modal-title">📝 Log Practice Session</div>
+
+    <!-- Topic info -->
     <div style="background:var(--surface2);border-radius:10px;padding:14px;margin-bottom:18px">
       <div style="font-size:12px;color:var(--text-faint);margin-bottom:4px">Topic</div>
       <div style="font-weight:600;font-size:15px" id="mcq-topic-name">—</div>
       <div style="font-size:12px;color:var(--text-light);margin-top:2px" id="mcq-topic-subject">—</div>
     </div>
 
-    <div class="form-group full" style="margin-bottom:16px">
-      <label class="form-label">Question Type</label>
-      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:6px" id="qtype-grid">
-        <div class="qtype-btn active" onclick="selectQType(this,'MCQ')" data-type="MCQ">
-          <span style="font-size:16px">📋</span>
-          <span class="qtype-label">MCQ</span>
-          <span class="qtype-sub">Multiple Choice</span>
+    <!-- Existing panels summary -->
+    <div id="existing-panels" style="margin-bottom:16px"></div>
+
+    <!-- Add new session panel -->
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px">
+      <div style="font-weight:600;font-size:13px;margin-bottom:12px;color:var(--text)">➕ Log a Session</div>
+
+      <div class="form-group" style="margin-bottom:12px">
+        <label class="form-label">Practice Type</label>
+        <input class="form-input" id="mcq-qtype" list="qtype-datalist" placeholder="e.g. MCQ, SAQ, OSCE, Picture Test, Practical…" autocomplete="off" style="margin-top:5px">
+        <datalist id="qtype-datalist">
+          <option value="MCQ">
+          <option value="SAQ">
+          <option value="OSCE">
+          <option value="Picture Test">
+          <option value="Practical">
+          <option value="Oral">
+          <option value="Essay">
+          <option value="Past Questions">
+        </datalist>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+        <div class="form-group">
+          <label class="form-label">Questions Attempted</label>
+          <input class="form-input" id="mcq-attempted" type="number" min="1" placeholder="e.g. 20" oninput="calcMcqPreview()" style="margin-top:5px">
         </div>
-        <div class="qtype-btn" onclick="selectQType(this,'SAQ')" data-type="SAQ">
-          <span style="font-size:16px">✍️</span>
-          <span class="qtype-label">SAQ</span>
-          <span class="qtype-sub">Short Answer / Essay</span>
-        </div>
-        <div class="qtype-btn" onclick="selectQType(this,'Picture Test')" data-type="Picture Test">
-          <span style="font-size:16px">🖼️</span>
-          <span class="qtype-label">Picture Test</span>
-          <span class="qtype-sub">Images / Radiology / Slides</span>
-        </div>
-        <div class="qtype-btn" onclick="selectQType(this,'OSCE')" data-type="OSCE">
-          <span style="font-size:16px">🩺</span>
-          <span class="qtype-label">OSCE</span>
-          <span class="qtype-sub">Clinical Stations</span>
+        <div class="form-group">
+          <label class="form-label">Questions Correct</label>
+          <input class="form-input" id="mcq-correct" type="number" min="0" placeholder="e.g. 14" oninput="calcMcqPreview()" style="margin-top:5px">
         </div>
       </div>
-      <input type="hidden" id="mcq-qtype" value="MCQ">
+
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <span id="mcq-preview-score" style="font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:700;color:var(--blue)">—</span>
+        <span style="color:var(--text-faint);font-size:13px">%</span>
+        <span style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden;display:block">
+          <span id="mcq-bar-fill" style="display:block;height:100%;width:0%;background:var(--blue);border-radius:3px;transition:width .3s"></span>
+        </span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="form-group">
+          <label class="form-label">Update Confidence</label>
+          <select class="form-select" id="mcq-confidence" style="margin-top:5px">
+            <option value="1">1 – I don't know this</option>
+            <option value="2">2 – I know a little</option>
+            <option value="3">3 – Basic understanding</option>
+            <option value="4">4 – I know this well</option>
+            <option value="5">5 – I can teach this</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Update Status</label>
+          <select class="form-select" id="mcq-status" style="margin-top:5px">
+            <option value="Not Started">Not Started</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Needs Attention">Needs Attention</option>
+            <option value="Mastered">Mastered</option>
+          </select>
+        </div>
+      </div>
     </div>
 
-    <div class="form-grid">
-      <div class="form-group">
-        <label class="form-label">Questions Attempted</label>
-        <input class="form-input" id="mcq-attempted" type="number" min="1" placeholder="e.g. 20" oninput="calcMcqPreview()">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Questions Correct</label>
-        <input class="form-input" id="mcq-correct" type="number" min="0" placeholder="e.g. 14" oninput="calcMcqPreview()">
-      </div>
-      <div class="form-group full">
-        <label class="form-label">Calculated Score</label>
-        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:10px">
-          <span id="mcq-preview-score" style="font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:700;color:var(--blue)">—</span>
-          <span style="color:var(--text-faint);font-size:13px">%</span>
-          <span style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden;display:block">
-            <span id="mcq-bar-fill" style="display:block;height:100%;width:0%;background:var(--blue);border-radius:3px;transition:width .3s"></span>
-          </span>
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Update Confidence</label>
-        <select class="form-select" id="mcq-confidence">
-          <option value="1">1 – I don't know this</option>
-          <option value="2">2 – I know a little</option>
-          <option value="3">3 – Basic understanding</option>
-          <option value="4">4 – I know this well</option>
-          <option value="5">5 – I can teach this</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Update Status</label>
-        <select class="form-select" id="mcq-status">
-          <option value="Not Started">Not Started</option>
-          <option value="In Progress">In Progress</option>
-          <option value="Needs Attention">Needs Attention</option>
-          <option value="Mastered">Mastered</option>
-        </select>
-      </div>
+    <div style="font-size:12px;color:var(--text-faint);padding:10px 12px;background:var(--surface2);border-radius:7px;margin-bottom:16px">
+      💡 Each practice type is tracked separately. Your overall Practice % is averaged across all types you've logged.
     </div>
-    <div style="font-size:12px;color:var(--text-faint);margin-top:14px;padding:10px 12px;background:var(--surface2);border-radius:7px">
-      💡 This will update your Practice Score %, confidence, last reviewed date and recalculate your Priority Score automatically.
-    </div>
+
     <div class="form-actions">
       <button class="btn btn-ghost" onclick="closeMcqModal()">Cancel</button>
       <button class="btn btn-primary" onclick="saveMcqSession()">Save Session</button>
@@ -1368,32 +1369,34 @@ function renderSetupGuide(container) {
 
 function renderMcqTracker(container) {
   const withSessions = topics.filter(t => t.sessions && t.sessions.length > 0);
-  const allSessions = topics.flatMap(t => (t.sessions||[]).map(s => ({...s, topic: t.topic, subject: t.subject})));
+  const allSessions = topics.flatMap(t => (t.sessions||[]).map(s => ({...s, topic: t.topic, subject: t.subject, topicId: t.id})));
   const totalAttempted = topics.reduce((s,t) => s+(t.totalMcqs||0), 0);
   const totalCorrect = topics.reduce((s,t) => s+(t.correctMcqs||0), 0);
   const overallPct = totalAttempted ? Math.round(totalCorrect/totalAttempted*100) : 0;
+  const typeIcons = { 'MCQ':'📋','SAQ':'✍️','Picture Test':'🖼️','OSCE':'🩺','Practical':'🔬','Oral':'🎙️','Essay':'📝','Past Questions':'📚' };
 
-  const qtypes = ['MCQ','SAQ','Picture Test','OSCE'];
-  const qtypeIcons = { 'MCQ':'📋','SAQ':'✍️','Picture Test':'🖼️','OSCE':'🩺' };
-  const qtypeStats = qtypes.map(qt => {
+  // Get all unique practice types used across all sessions
+  const allTypes = [...new Set(allSessions.map(s => s.type))];
+  const typeStats = allTypes.map(qt => {
     const sessions = allSessions.filter(s => s.type === qt);
     const attempted = sessions.reduce((a,s) => a+s.attempted, 0);
     const correct = sessions.reduce((a,s) => a+s.correct, 0);
     const pct = attempted ? Math.round(correct/attempted*100) : null;
     return { qt, attempted, correct, pct, count: sessions.length };
-  }).filter(s => s.attempted > 0);
+  });
 
   container.innerHTML = `
+    <!-- OVERALL STATS -->
     <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px">
       <div class="stat-card">
         <div class="s-label">Total Questions</div>
-        <div class="s-value" style="color:var(--blue)">${totalAttempted}</div>
-        <div class="s-sub">Across all session types</div>
+        <div class="s-value" style="color:var(--blue)">${totalAttempted || '—'}</div>
+        <div class="s-sub">Across all practice types</div>
       </div>
       <div class="stat-card">
-        <div class="s-label">Overall Score</div>
-        <div class="s-value" style="color:${overallPct>=70?'var(--green)':overallPct>=50?'var(--yellow)':'var(--red)'}">${overallPct || '—'}%</div>
-        <div class="bar"><div class="bar-fill" style="width:${overallPct}%;background:${overallPct>=70?'var(--green)':overallPct>=50?'var(--yellow)':'var(--red)'}"></div></div>
+        <div class="s-label">Overall Avg Score</div>
+        <div class="s-value" style="color:${overallPct>=70?'var(--green)':overallPct>=50?'var(--yellow)':'var(--red)'}">${overallPct || '—'}${totalAttempted?'%':''}</div>
+        ${totalAttempted ? `<div class="bar"><div class="bar-fill" style="width:${overallPct}%;background:${overallPct>=70?'var(--green)':overallPct>=50?'var(--yellow)':'var(--red)'}"></div></div>` : ''}
       </div>
       <div class="stat-card">
         <div class="s-label">Topics Practised</div>
@@ -1402,12 +1405,13 @@ function renderMcqTracker(container) {
       </div>
     </div>
 
-    ${qtypeStats.length ? `
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:24px">
-      ${qtypeStats.map(s => {
+    <!-- PER TYPE BREAKDOWN -->
+    ${typeStats.length ? `
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:24px">
+      ${typeStats.map(s => {
         const color = s.pct>=70?'var(--green)':s.pct>=50?'var(--yellow)':'var(--red)';
         return `<div class="stat-card">
-          <div class="s-label">${qtypeIcons[s.qt]} ${s.qt}</div>
+          <div class="s-label">${typeIcons[s.qt]||'📝'} ${s.qt}</div>
           <div class="s-value" style="color:${color}">${s.pct}%</div>
           <div class="s-sub">${s.attempted} questions · ${s.count} session${s.count>1?'s':''}</div>
           <div class="bar"><div class="bar-fill" style="width:${s.pct}%;background:${color}"></div></div>
@@ -1415,39 +1419,53 @@ function renderMcqTracker(container) {
       }).join('')}
     </div>` : ''}
 
-    <div class="table-wrapper">
-      <div class="table-header">
-        <div class="table-title">📝 Practice Session Log</div>
-        <span style="font-size:12px;color:var(--text-faint)">Hover any topic → click 📝 to log a session</span>
-      </div>
-      ${allSessions.length ? `
-      <table>
-        <thead><tr>
-          <th>Topic</th><th>Subject</th><th>Type</th><th>Score</th><th>Attempted</th><th>Correct</th><th>Date</th>
-        </tr></thead>
-        <tbody>
-          ${allSessions.sort((a,b) => new Date(b.date)-new Date(a.date)).map(s => {
-            const color = s.pct>=70?'var(--green)':s.pct>=50?'var(--yellow)':'var(--red)';
-            return `<tr>
-              <td class="topic-name">${s.topic}</td>
-              <td>${subjectTag(s.subject)}</td>
-              <td><span style="font-size:13px">${qtypeIcons[s.type]||'📝'} ${s.type}</span></td>
-              <td>
-                <span class="score-badge" style="color:${color}">${s.pct}%</span>
-                <div class="bar" style="margin-top:4px;width:70px"><div class="bar-fill" style="width:${s.pct}%;background:${color}"></div></div>
-              </td>
-              <td style="font-family:'JetBrains Mono',monospace">${s.attempted}</td>
-              <td style="font-family:'JetBrains Mono',monospace">${s.correct}</td>
-              <td style="font-size:12px;color:var(--text-light)">${s.date}</td>
-            </tr>`;
-          }).join('')}
-        </tbody>
-      </table>` : `
-      <div class="empty-state">
-        <div class="emoji">📭</div>
-        <p>No practice sessions logged yet.<br>Go to any topic, hover over it and click 📝 to log your first session.</p>
-      </div>`}
-    </div>
+    <!-- PER TOPIC PANELS -->
+    ${withSessions.length ? `
+    <div style="display:flex;flex-direction:column;gap:16px">
+      ${withSessions.map(t => {
+        const byType = {};
+        (t.sessions||[]).forEach(s => {
+          if (!byType[s.type]) byType[s.type] = { attempted:0, correct:0, count:0 };
+          byType[s.type].attempted += s.attempted;
+          byType[s.type].correct += s.correct;
+          byType[s.type].count++;
+        });
+        return `
+        <div class="table-wrapper">
+          <div class="table-header">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div>
+                <div class="table-title">${t.topic}</div>
+                <div style="font-size:12px;color:var(--text-faint);margin-top:2px">${t.subject}${t.subtopic?' · '+t.subtopic:''}</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="text-align:right">
+                <div style="font-size:11px;color:var(--text-faint)">Overall avg</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:16px;color:${(t.mcq||0)>=70?'var(--green)':(t.mcq||0)>=50?'var(--yellow)':'var(--red)'}">${t.mcq !== null && t.mcq !== undefined ? t.mcq+'%' : '—'}</div>
+              </div>
+              <button class="row-btn" onclick="openMcqModal(${t.id})" style="opacity:1;padding:6px 10px;font-size:12px;border-radius:6px;background:var(--blue-dim);color:var(--blue);border:1px solid var(--blue)33" title="Log new session">📝 Log</button>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1px;background:var(--border)">
+            ${Object.entries(byType).map(([type, data]) => {
+              const pct = Math.round(data.correct/data.attempted*100);
+              const color = pct>=70?'var(--green)':pct>=50?'var(--yellow)':'var(--red)';
+              return `<div style="background:var(--surface);padding:14px 16px">
+                <div style="font-size:12px;color:var(--text-faint);margin-bottom:6px">${typeIcons[type]||'📝'} ${type}</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:20px;color:${color}">${pct}%</div>
+                <div style="font-size:11px;color:var(--text-faint);margin-top:3px">${data.attempted} questions · ${data.count} session${data.count>1?'s':''}</div>
+                <div class="bar" style="margin-top:8px"><div class="bar-fill" style="width:${pct}%;background:${color}"></div></div>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>` : `
+    <div class="empty-state">
+      <div class="emoji">📭</div>
+      <p>No practice sessions logged yet.<br>Go to any topic, hover over it and click 📝 to log your first session.</p>
+    </div>`}
   `;
 }
 
@@ -1857,16 +1875,55 @@ function openMcqModal(id) {
   document.getElementById('mcq-topic-subject').textContent = t.subject + (t.subtopic ? ' · ' + t.subtopic : '');
   document.getElementById('mcq-attempted').value = '';
   document.getElementById('mcq-correct').value = '';
-  document.getElementById('mcq-attempted').placeholder = 'e.g. 20';
-  document.getElementById('mcq-correct').placeholder = 'e.g. 14';
   document.getElementById('mcq-preview-score').textContent = '—';
   document.getElementById('mcq-bar-fill').style.width = '0%';
   document.getElementById('mcq-confidence').value = t.confidence;
   document.getElementById('mcq-status').value = t.status;
-  // Reset question type to MCQ
-  document.getElementById('mcq-qtype').value = 'MCQ';
-  document.querySelectorAll('.qtype-btn').forEach(b => b.classList.remove('active'));
-  document.querySelector('.qtype-btn[data-type="MCQ"]').classList.add('active');
+  document.getElementById('mcq-qtype').value = '';
+
+  // Build existing panels summary
+  const panelsEl = document.getElementById('existing-panels');
+  const sessions = t.sessions || [];
+  if (sessions.length > 0) {
+    // Group by practice type
+    const byType = {};
+    sessions.forEach(s => {
+      if (!byType[s.type]) byType[s.type] = { attempted: 0, correct: 0, count: 0 };
+      byType[s.type].attempted += s.attempted;
+      byType[s.type].correct += s.correct;
+      byType[s.type].count++;
+    });
+    const typeIcons = { 'MCQ':'📋','SAQ':'✍️','OSCE':'🩺','Picture Test':'🖼️','Practical':'🔬','Oral':'🎙️','Essay':'📝','Past Questions':'📚' };
+    panelsEl.innerHTML = `
+      <div style="margin-bottom:16px">
+        <div style="font-size:12px;color:var(--text-faint);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Previous Sessions</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          ${Object.entries(byType).map(([type, data]) => {
+            const pct = Math.round(data.correct / data.attempted * 100);
+            const color = pct >= 70 ? 'var(--green)' : pct >= 50 ? 'var(--yellow)' : 'var(--red)';
+            return `<div style="background:var(--surface2);border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px">
+              <span style="font-size:16px">${typeIcons[type]||'📝'}</span>
+              <div style="flex:1">
+                <div style="font-size:13px;font-weight:600;color:var(--text)">${type}</div>
+                <div style="font-size:11px;color:var(--text-faint)">${data.count} session${data.count>1?'s':''} · ${data.attempted} questions</div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:16px;color:${color}">${pct}%</div>
+                <div style="height:4px;width:60px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:4px">
+                  <div style="height:100%;width:${pct}%;background:${color};border-radius:2px"></div>
+                </div>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+        ${Object.keys(byType).length > 0 ? `<div style="font-size:11.5px;color:var(--text-faint);margin-top:8px;padding:8px 10px;background:var(--surface2);border-radius:6px">
+          Overall avg: <span style="font-weight:700;color:var(--blue)">${t.mcq !== null ? t.mcq + '%' : '—'}</span> across all practice types
+        </div>` : ''}
+      </div>`;
+  } else {
+    panelsEl.innerHTML = `<div style="font-size:12px;color:var(--text-faint);margin-bottom:12px;padding:10px;background:var(--surface2);border-radius:7px">No sessions logged yet for this topic. Log your first one below.</div>`;
+  }
+
   document.getElementById('mcq-modal-overlay').classList.add('open');
 }
 
@@ -1913,15 +1970,10 @@ function saveMcqSession() {
     showToast('⚠️ Enter how many questions you attempted and how many you got correct'); return;
   }
   const pct = Math.round((correct / attempted) * 100);
-  const qtype = document.getElementById('mcq-qtype').value;
+  const qtype = document.getElementById('mcq-qtype').value.trim() || 'General Practice';
   const idx = topics.findIndex(t => t.id === mcqTopicId);
-  topics[idx].mcq = pct;
-  topics[idx].confidence = parseInt(document.getElementById('mcq-confidence').value);
-  topics[idx].status = document.getElementById('mcq-status').value;
-  topics[idx].lastReviewed = new Date().toISOString().split('T')[0];
-  topics[idx].totalMcqs = (topics[idx].totalMcqs || 0) + attempted;
-  topics[idx].correctMcqs = (topics[idx].correctMcqs || 0) + correct;
-  // Store session history with question type
+
+  // Store session history
   if (!topics[idx].sessions) topics[idx].sessions = [];
   topics[idx].sessions.push({
     date: new Date().toISOString().split('T')[0],
@@ -1930,9 +1982,22 @@ function saveMcqSession() {
     correct,
     pct
   });
+
+  // Calculate average Practice % across ALL sessions for this topic
+  const allSessions = topics[idx].sessions;
+  const totalAttempted = allSessions.reduce((s, ss) => s + ss.attempted, 0);
+  const totalCorrect = allSessions.reduce((s, ss) => s + ss.correct, 0);
+  topics[idx].mcq = totalAttempted > 0 ? Math.round(totalCorrect / totalAttempted * 100) : null;
+
+  topics[idx].totalMcqs = totalAttempted;
+  topics[idx].correctMcqs = totalCorrect;
+  topics[idx].confidence = parseInt(document.getElementById('mcq-confidence').value);
+  topics[idx].status = document.getElementById('mcq-status').value;
+  topics[idx].lastReviewed = new Date().toISOString().split('T')[0];
+
   saveToDB();
   closeMcqModal();
-  showToast(`✅ ${qtype} session saved — ${pct}% on ${topics[idx].topic}`);
+  showToast(`✅ ${qtype} session saved — ${pct}% (Overall avg: ${topics[idx].mcq}%)`);
   showView(currentView, currentFilter);
 }
 
