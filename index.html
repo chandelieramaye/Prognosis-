@@ -493,6 +493,33 @@ select option { background: var(--select-bg); color: var(--text); }
 </head>
 <body>
 
+<!-- SPLASH SCREEN -->
+<div id="splash-screen" style="
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  background:#0a1a12;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  z-index:99999;
+  transition:opacity .6s ease, transform .6s ease;
+">
+  <div id="splash-inner" style="text-align:center;opacity:0;transform:translateY(16px);transition:opacity .5s ease, transform .5s ease">
+    <div style="font-size:64px;margin-bottom:16px;filter:drop-shadow(0 0 24px #4fc88a44)">🩺</div>
+    <div style="font-family:'Inter',sans-serif;font-size:36px;font-weight:900;color:white;letter-spacing:-.02em;margin-bottom:6px">Prognosis</div>
+    <div style="font-family:'Inter',sans-serif;font-size:14px;font-weight:500;color:#7ab8ff;letter-spacing:.06em">SMART REVISION SYSTEM</div>
+    <div style="margin-top:32px;display:flex;gap:6px;justify-content:center" id="splash-dots">
+      <div style="width:6px;height:6px;border-radius:50%;background:#4fc88a;animation:splashDot .8s ease infinite"></div>
+      <div style="width:6px;height:6px;border-radius:50%;background:#4fc88a;animation:splashDot .8s ease .15s infinite"></div>
+      <div style="width:6px;height:6px;border-radius:50%;background:#4fc88a;animation:splashDot .8s ease .3s infinite"></div>
+    </div>
+  </div>
+</div>
+
+<style>
+@keyframes splashDot {
+  0%, 100% { opacity:.2; transform:scale(.8); }
+  50% { opacity:1; transform:scale(1.2); }
+}
+</style>
+
 <div class="app">
   <!-- SIDEBAR -->
   <div class="sidebar">
@@ -2356,6 +2383,25 @@ function toggleThemeDropdown(e) {
 document.addEventListener('click', () => {
   document.getElementById('theme-dropdown').classList.remove('open');
 });
+
+// ─── SPLASH SCREEN ────────────────────────────────────────────────────────────
+(function() {
+  // Fade in the inner content
+  setTimeout(() => {
+    const inner = document.getElementById('splash-inner');
+    if (inner) { inner.style.opacity = '1'; inner.style.transform = 'translateY(0)'; }
+  }, 100);
+
+  // Fade out splash after 2 seconds
+  setTimeout(() => {
+    const splash = document.getElementById('splash-screen');
+    if (splash) {
+      splash.style.opacity = '0';
+      splash.style.transform = 'scale(1.04)';
+      setTimeout(() => { splash.style.display = 'none'; }, 650);
+    }
+  }, 2000);
+})();
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 const savedTheme = localStorage.getItem('prognosisTheme') || 'dark-green';
